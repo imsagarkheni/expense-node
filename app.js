@@ -42,8 +42,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 const apispaths = [
 	{ pathUrl: '/', routeFile: 'login' },
   { pathUrl: '/users', routeFile: 'users' },
-  { pathUrl: '/balance', routeFile: 'balance' },
   { pathUrl: '/expense', routeFile: 'expense' },
+  { pathUrl: '/customers', routeFile: 'customers' },
 ];
 apispaths.forEach((path) => {
 	app.use('/apis/v1' + path.pathUrl, require('./routes/apis/v1/' + path.routeFile));
