@@ -32,11 +32,22 @@ router.post('/addexpense', helper.authenticateToken, async (req, res) => {
     }
   });
 
-  router.get('/expenselist', helper.authenticateToken, async (req, res) => {
+  router.post('/expenselist', helper.authenticateToken, async (req, res) => {
     try {
-    
+        const { page, limit, search } = req.body;
         const primary = mongoConnection.useDb(constants.DEFAULT_DB);
-        let expenseData = await primary.model(constants.MODELS.expenses, expenses).find({user_id:req.token.userid}); 
+        
+        let query = { user_id: req.token.userid };
+        
+        if (search) {
+          query.$or = [
+            { description: { $regex: search, $options: 'i' } },
+            { customer: { $regex: search, $options: 'i' } }
+        ];
+        }
+
+        let expenseData = await primary.model(constants.MODELS.expenses, expenses).paginate(query, { page, limit });
+        
         if (expenseData) {
             return responseManager.onSuccess('Expense list!', expenseData, res);
         } else {
@@ -44,9 +55,10 @@ router.post('/addexpense', helper.authenticateToken, async (req, res) => {
         }
     } catch (error) {
         console.log("error", error);
-        return responseManager.onError(error, res); // Handle any errors
+        return responseManager.onError(error, res);
     }
 });
+
 
 router.get('/getTotal', helper.authenticateToken, async (req, res) => {
   try {
