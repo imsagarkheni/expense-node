@@ -36,7 +36,7 @@ router.post('/addexpense', helper.authenticateToken, async (req, res) => {
     try {
     
         const primary = mongoConnection.useDb(constants.DEFAULT_DB);
-        let expenseData = await primary.model(constants.MODELS.expenses, expenses).find(); 
+        let expenseData = await primary.model(constants.MODELS.expenses, expenses).find({user_id:req.token.userid}); 
         if (expenseData) {
             return responseManager.onSuccess('Expense list!', expenseData, res);
         } else {
@@ -52,7 +52,7 @@ router.get('/getTotal', helper.authenticateToken, async (req, res) => {
   try {
   
       const primary = mongoConnection.useDb(constants.DEFAULT_DB);
-      let expenseData = await primary.model(constants.MODELS.expenses, expenses).find(); 
+      let expenseData = await primary.model(constants.MODELS.expenses, expenses).find({user_id:req.token.userid}); 
       if (expenseData) {
         let totalIncome = 0;
         let totalExpense = 0;
