@@ -41,6 +41,24 @@ router.post("/list", helper.authenticateToken, async (req, res) => {
     return responseManager.onError(error, res);
   }
 });
+router.get("/listAll",helper.authenticateToken, async (req, res) => {
+  try {
+      if (req.token.userid && mongoose.Types.ObjectId.isValid(req.token.userid)) {
+          let primary = mongoConnection.useDb(constants.DEFAULT_DB);
+          let userList = await primary.model(constants.MODELS.customers, customers).find({})
+          if(userList){
+              return responseManager.onSuccess('customers list...', userList, res);
+          }else{
+              return responseManager.onSuccess('No Result Found', 0, res);
+          }
+      }else{
+          return responseManager.badRequest({ message: 'Invalid token, please try again' }, res);
+      }
+  } catch (error) {
+      return responseManager.onError(error, res);
+  }
+});
+
 router.post("/delete", helper.authenticateToken, async (req, res) => {
   try {
     if (req.token.userid && mongoose.Types.ObjectId.isValid(req.token.userid)) {
