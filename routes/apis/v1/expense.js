@@ -59,6 +59,41 @@ router.post('/addexpense', helper.authenticateToken, async (req, res) => {
     }
 });
 
+router.post('/balancesheet', helper.authenticateToken, async (req, res) => {
+  try {
+      const { page, limit, search,type } = req.body;
+      const primary = mongoConnection.useDb(constants.DEFAULT_DB);
+      let query = { user_id: req.token.userid };
+      
+      if (search) {
+        query.$or = [
+          { description: { $regex: search, $options: 'i' } },
+          { customer: { $regex: search, $options: 'i' } }
+      ];
+      }
+      if(type){
+        query.type = type
+      }
+
+      let expenseData = await primary.model(constants.MODELS.expenses, expenses).paginate(query, { page, limit });
+      let totalData = await primary.model(constants.MODELS.expenses, expenses).find({user_id:req.token.userid,type:type});
+      let tAmount = 0;
+      console.log("totalData",totalData);
+      totalData.map((ele)=>{
+        tAmount += ele.amount
+      })
+      expenseData.tAmount = tAmount
+      if (expenseData) {
+          return responseManager.onSuccess('Balance Sheet list!', expenseData, res);
+      } else {
+          return responseManager.onError('No expenses found!', res);
+      }
+  } catch (error) {
+      console.log("error", error);
+      return responseManager.onError(error, res);
+  }
+});
+
 
 router.get('/getTotal', helper.authenticateToken, async (req, res) => {
   try {

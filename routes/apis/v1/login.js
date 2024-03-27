@@ -47,4 +47,25 @@ router.post('/login', async (req, res) => {
     }
 
 });
+router.post('/forgot', async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const primary = mongoConnection.useDb(constants.DEFAULT_DB);
+        if(email && password){
+            const userdata = await primary.model(constants.MODELS.users, usersModel).findOne({ email: email }).lean();
+        if (!userdata) {
+            return responseManager.badrequest('User not found...', res);
+        } else {
+            await primary.model(constants.MODELS.users, usersModel).updateOne({ email: email }, { $set: { password: password } }); // Corrected the syntax for updateOne
+            return responseManager.onSuccess('User password changed!', 1, res);
+        }
+        }else{
+            return responseManager.badrequest('User not found...', res);
+        }
+        
+    } catch (error) {
+        console.error('Error occurred:', error);
+    }
+});
+
  module.exports = router;
